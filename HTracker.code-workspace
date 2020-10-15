@@ -1,0 +1,21 @@
+{
+	"folders": [
+		{
+			"name": "libs",
+			"path": "libs"
+		},
+		{
+			"name": "M5-Terabee-CAN",
+			"path": "M5-Terabee-CAN"
+		},
+		{
+			"name": "M5-Receiver-CAN",
+			"path": "M5-Receiver-CAN"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"string_view": "cpp"
+		}
+	}
+}
