@@ -4,7 +4,11 @@
 #include "teraranger.h"
 #include "can.h"
 
-#define REPEAT_TIME 500
+#define HID 37
+
+const char* title =  "HTracker v0.1 - TERABEE";
+
+#define KEEPALIVE_TIME 500
 
 uint32_t last_send = 0;
 uint16_t last_value = 0;
@@ -15,21 +19,28 @@ void setup()
 
   #include <themes/dark.h>
   ez.begin();
-  ez.screen.clear();
-  ez.header.show("H-Ranger Terabee CAN");
+  M5.Speaker.mute();
 
-  ez.canvas.println();
-  ez.canvas.println("Hello!");
+  ez.screen.clear();
+  ez.header.show(title);
+  ez.canvas.lmargin(10);
+  ez.canvas.font(&FreeSans9pt7b);
+  ez.canvas.println("");
+  ez.canvas.println("Hello");
   
   // Starting TeraRanger I2C
-  ez.canvas.print("Starting TeraBee I2C.. ");
+  ez.canvas.print("[INIT ] Starting TeraBee I2C.. ");
   if (tera_setup()) ez.canvas.println("OK!");
   else ez.canvas.println("ERROR");
 
   // Starting CAN interface
-  ez.canvas.print("Starting CAN Bus.. ");
+  ez.canvas.print("[INIT ] Starting CAN Bus.. ");
   if (can_setup()) ez.canvas.println("OK!");
   else ez.canvas.println("ERROR");
+
+  // Ready
+  ez.canvas.println("[READY] Starting data emission.. ");
+  
 }
 
 
@@ -37,18 +48,17 @@ void loop()
 {
   uint16_t current_value = tera_read();
 
-  bool trig = (current_value/20 != last_value/20) || (millis() - last_send > REPEAT_TIME);
+  bool trig = (current_value/30 != last_value/30) || (millis() - last_send > KEEPALIVE_TIME);
   if (trig) 
   {
-    canMsg msg = {MEASURE, 0x100, 2, {
-        (current_value >> 8) & 0xff, 
-        current_value & 0xff
-      }};
+    CanMessage* msg = new CanMessage(HID, MEASURE, current_value);
 
     can_send(msg);
-    Serial.println(current_value);
+
     last_value = current_value;
     last_send = millis();
+
+    ez.msgBox(title, String(msg->value()/1000.)+" m", "", false);
   }
 
 }
