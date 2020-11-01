@@ -39,9 +39,9 @@ class Scene():
 
 class SceneBook():
 
-    def __init__(self, dmxout, file='scenario.json'):
+    def __init__(self, dmxout, file):
         self.dmxout = dmxout
-        self.file = os.path.join(os.path.dirname(os.path.realpath(__file__)), file)
+        self.file = file
 
         self.scenes = [None]*25
         self.activeScene = 0
@@ -70,13 +70,14 @@ class SceneBook():
             f.write(jdata)
     
     def load(self):
-        # try:
+        try:
             with open(self.file, "r") as f:
                 jdata = f.read()
             jdata=json.loads(jdata)
             self.setup( jdata )
-        # except:
-        #     print("error while loading scenario")
+            print("reload scenario")
+        except:
+            print("error while loading scenario")
     
     def process(self, sensorHID, measure):
         if self.activeScene >= 0 and self.activeScene < len(self.scenes):

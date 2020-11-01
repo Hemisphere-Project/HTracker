@@ -41,6 +41,11 @@ class Sensor():
 
 
     def process(self, measure):
+        
+        # IGNORE - <500 -
+        if measure < 500:   
+            return
+
         selIndex = -1
         for k, t in enumerate(self.thresholds):
             if measure > t[0]:
@@ -56,7 +61,7 @@ class Sensor():
         
         for c in self.dmxchannels:
             self.dmxout.dmx.set_channel(c, dmxValue)
-            # print(c, dmxValue)
+            print('sensor', self.hid, measure, c, dmxValue)
         if len(self.dmxchannels) > 0:
             self.dmxout.dmx.submit()
 

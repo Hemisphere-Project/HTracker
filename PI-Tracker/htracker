@@ -21,7 +21,11 @@ DMXout = DmxOutput()
 # DMXout.test = True
 DMXout.start()
 
-Book = SceneBook(DMXout, 'scenario.json')
+scenario = '/data/htracker-scenario.json'
+if len(sys.argv) > 1:
+    scenario = os.path.join('/data', 'htracker-'+sys.argv[1]+'.json')
+
+Book = SceneBook(DMXout, scenario)
 
 # SCENE Select
 @DMXin.on("sceneselect")
@@ -36,12 +40,12 @@ def ms(ev, data):
 #WATCH scenario
 def scenarioreload(e):
     if e.src_path.endswith("scenario.json"):
-        print('reload', e)
+        # print('reload', e)
         Book.load()
 handler = PatternMatchingEventHandler("*/scenario.json", None, False, True)
 handler.on_created = scenarioreload
 observer = Observer()
-observer.schedule(handler, os.path.dirname(os.path.realpath(__file__)) )
+observer.schedule(handler, os.path.dirname(os.path.realpath(scenario)) )
 observer.start()
 
 # Book.setup( {'scenes': [
