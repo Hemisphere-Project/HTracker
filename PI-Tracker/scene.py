@@ -1,5 +1,5 @@
 from sensor import Sensor
-import json
+import json, os
 
 
 class Scene():
@@ -41,10 +41,10 @@ class SceneBook():
 
     def __init__(self, dmxout, file='scenario.json'):
         self.dmxout = dmxout
-        self.file = file
+        self.file = os.path.join(os.path.dirname(os.path.realpath(__file__)), file)
 
         self.scenes = [None]*25
-        self.activeScene = -1
+        self.activeScene = 0
         
     def selectscene(self, sceneN):
         if sceneN < len(self.scenes) and self.scenes[sceneN]: 

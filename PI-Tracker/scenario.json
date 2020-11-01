@@ -1,7 +1,6 @@
 {
     "scenes": [
-        {
-            "sensors": [
+        { "sensors": [
                 {
                     "hid": 1,
                     "dmxchannels": [1],
@@ -10,6 +9,14 @@
                         [500, 10],
                         [1000, 20],
                         [6000, 255]
+                    ]
+                },
+                {
+                    "hid": 2,
+                    "dmxchannels": [2],
+                    "interpolation": 0,
+                    "thresholds": [
+                        [1000, 255] 
                     ]
                 }
             ]

@@ -56,7 +56,7 @@ class Sensor():
         
         for c in self.dmxchannels:
             self.dmxout.dmx.set_channel(c, dmxValue)
-            print(c, dmxValue)
+            # print(c, dmxValue)
         if len(self.dmxchannels) > 0:
             self.dmxout.dmx.submit()
 

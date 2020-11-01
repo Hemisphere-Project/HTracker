@@ -3,7 +3,9 @@ from enttecpro_receive import DmxInput
 from enttecpro_send import DmxOutput
 from scene import SceneBook
 from time import sleep
-import sys, signal
+import sys, signal, os
+from watchdog.observers import Observer
+from watchdog.events import PatternMatchingEventHandler
 
 M5usb = M5Interface()
 M5usb.logEvents = False
@@ -29,6 +31,16 @@ def ss(ev, sceneN):
 def ms(ev, data):
     Book.process(data['sensor'], data['value'])
 
+#WATCH scenario
+def scenarioreload(e):
+    if e.src_path.endswith("scenario.json"):
+        print('reload', e)
+        Book.load()
+handler = PatternMatchingEventHandler("*/scenario.json", None, False, True)
+handler.on_created = scenarioreload
+observer = Observer()
+observer.schedule(handler, os.path.dirname(os.path.realpath(__file__)) )
+observer.start()
 
 # Book.setup( {'scenes': [
 #     {'sensors': [
