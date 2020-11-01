@@ -1,3 +1,4 @@
+#pragma once
 #include <Wire.h>
 
 #define SENSOR_ADDR 0x31  

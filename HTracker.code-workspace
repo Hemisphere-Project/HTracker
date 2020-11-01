@@ -1,21 +1,14 @@
 {
 	"folders": [
 		{
-			"name": "libs",
-			"path": "libs"
+			"path": "M5-CAN-Tracker"
 		},
 		{
-			"name": "M5-Terabee-CAN",
-			"path": "M5-Terabee-CAN"
+			"path": "ATOM-Dmx"
 		},
 		{
-			"name": "M5-Receiver-CAN",
-			"path": "M5-Receiver-CAN"
+			"path": "PI-Tracker"
 		}
 	],
-	"settings": {
-		"files.associations": {
-			"string_view": "cpp"
-		}
-	}
+	"settings": {}
 }

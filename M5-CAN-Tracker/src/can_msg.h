@@ -1,3 +1,4 @@
+#pragma once
 #include <Arduino.h>
 
 enum canCode {
@@ -11,7 +12,7 @@ enum canCode {
 class CanMessage {
     public:
         // Sender 8bit constructor 
-        CanMessage(long unsigned int id, canCode code, uint8_t value=0) 
+        CanMessage(uint8_t id, canCode code, uint8_t value=0) 
             : _uid(id), _code(code) {
             
             this->_length = 1;
@@ -19,7 +20,7 @@ class CanMessage {
         }
 
         // Sender 16bit constructor 
-        CanMessage(long unsigned int id, canCode code, uint16_t value=0) 
+        CanMessage(uint8_t id, canCode code, uint16_t value=0) 
             : _uid(id), _code(code) {
             
             this->_length = 2;
@@ -28,7 +29,7 @@ class CanMessage {
         }
 
         // Sender 32bit constructor 
-        CanMessage(long unsigned int id, canCode code, uint32_t value=0) 
+        CanMessage(uint8_t id, canCode code, uint32_t value=0) 
             : _uid(id), _code(code) {
             
             this->_length = 4;
@@ -39,7 +40,7 @@ class CanMessage {
         }
 
         // Receiver constructor
-        CanMessage(long unsigned int id, uint8_t len, uint8_t raw_data[8])
+        CanMessage(uint8_t id, uint8_t len, uint8_t raw_data[8])
             : _uid(id), _length(len) {
             
             // Remote Request Frame
@@ -56,7 +57,7 @@ class CanMessage {
             else this->_code = EMPTYFRAME;
         }
 
-        long unsigned int uid() { 
+        uint8_t uid() { 
             return this->_uid; 
         }
 
@@ -77,9 +78,13 @@ class CanMessage {
             return v;
         }
 
+        canCode type() {
+            return this->_code; 
+        }
+
 
     private:
-        long unsigned int _uid;
+        uint8_t _uid;
         canCode _code;
         uint8_t _length;
         uint8_t _data[8];

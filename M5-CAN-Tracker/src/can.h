@@ -1,3 +1,4 @@
+#pragma once
 #include <mcp_can.h>
 #include "can_msg.h"
 
@@ -20,7 +21,7 @@ bool can_setup()
 
 bool can_send(CanMessage* msg)
 {
-  // send data:  ID = 0x100, Standard CAN Frame, Data length = 8 bytes, 'data' = array of data bytes to send
+  // send data:  ID, Standard CAN Frame = 0, Data length = 8 bytes, 'data' = array of data bytes to send
   return (CAN0.sendMsgBuf(msg->uid(), 0, msg->frameSize(), msg->frame()) == CAN_OK);
 }
 
@@ -36,7 +37,7 @@ CanMessage* can_read()
     // Read data: length = data length, buf = data byte(s)
     CAN0.readMsgBuf(&uid, &length, rxBuf);              
 
-    return new CanMessage(uid, length, rxBuf);    
+    return new CanMessage( (uint8_t)uid, length, rxBuf);    
   }
   return nullptr;
 }

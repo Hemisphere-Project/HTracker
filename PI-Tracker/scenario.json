@@ -1,0 +1,42 @@
+{
+    "scenes": [
+        {
+            "sensors": [
+                {
+                    "hid": 1,
+                    "dmxchannels": [1],
+                    "interpolation": 1,
+                    "thresholds": [
+                        [500, 10],
+                        [1000, 20],
+                        [6000, 255]
+                    ]
+                }
+            ]
+        },
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+    ]
+}
