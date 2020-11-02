@@ -185,6 +185,7 @@ void loop()
       ez.msgBox(txt_title, txt_hid+"\n"+String(msg->value()/1000.)+" m", "", false);
 
       delete msg;
+      delay(50);
     }
 
     // LASER

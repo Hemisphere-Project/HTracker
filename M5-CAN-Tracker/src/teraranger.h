@@ -75,8 +75,10 @@ uint16_t tera_read()
     buf[1] = Wire.read();                       // Second byte of distance
     buf[2] = Wire.read();                       // Byte of checksum
     
+    uint16_t value = 0;
     if (crc8(buf, 2) == buf[2])                 // If the function crc8 return the same checksum than the TeraRanger, then:
-        return (buf[0]<<8) + buf[1];            // Calculate distance in mm
+        value = (buf[0]<<8) + buf[1];            // Calculate distance in mm
     
-    return 0;       
+    if (value > 50000) value = 0;
+    return value;       
 }
