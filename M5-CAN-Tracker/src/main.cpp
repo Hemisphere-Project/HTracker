@@ -28,7 +28,7 @@ MeasureBook* book;
 
 // Sender variables
 //
-#define KEEPALIVE_TIME 500
+#define KEEPALIVE_TIME 100
 uint32_t last_send = 0;
 uint16_t last_value = 0;
 
@@ -84,9 +84,9 @@ void setup()
   // Prepare
   //
   txt_hid += String(HID);
-  txt_title += String(HVERSION)+" ";
-  if (MODE == 0)  txt_title += "RECV";
-  if (MODE == 1)  txt_title += "TERA";
+  txt_title += " v"+String(HVERSION)+" ";
+  if (MODE == 0)  txt_title += " -RECV";
+  if (MODE == 1)  txt_title += " -TERA";
 
   pinMode(LASER_BTN_PIN, INPUT_PULLUP);
   pinMode(LASER_DISABLE_PIN, OUTPUT);
@@ -171,8 +171,8 @@ void loop()
   else if (MODE == 1) 
   {
     uint16_t current_value = tera_read();
-    bool trig = (current_value/50 != last_value/50) || (millis() - last_send > KEEPALIVE_TIME);
-    if (trig) 
+    
+    if (millis() - last_send > KEEPALIVE_TIME) 
     {
       // Send value
       CanMessage* msg = new CanMessage(HID, MEASURE, current_value);
@@ -185,7 +185,6 @@ void loop()
       ez.msgBox(txt_title, txt_hid+"\n"+String(msg->value()/1000.)+" m", "", false);
 
       delete msg;
-      delay(50);
     }
 
     // LASER
@@ -202,7 +201,7 @@ void loop()
   }
 
   // Serial.println(ESP.getFreeHeap());
-  Serial.println(digitalRead(LASER_BTN_PIN));
+  // Serial.println(digitalRead(LASER_BTN_PIN));
   if (wifiConnected) ArduinoOTA.handle();
 }
 
