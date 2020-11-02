@@ -2,12 +2,6 @@
 	"folders": [
 		{
 			"path": "M5-CAN-Tracker"
-		},
-		{
-			"path": "ATOM-Dmx"
-		},
-		{
-			"path": "PI-Tracker"
 		}
 	],
 	"settings": {}
