@@ -1,5 +1,5 @@
 from operator import itemgetter
-
+from zone import Zone
 
 def interpol(x, in_min, in_max, out_min, out_max):
   return int((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min);
@@ -9,12 +9,12 @@ class Sensor():
 
     def __init__(self, dmxout, data=None):
         self.dmxout = dmxout
-        self.hid = 0
-        self.thresholds = []
-        self.interpolation = 0      # 0: no / 1: linear
-        self.dmxchannels = []
-        self.lastMeasure = 0
 
+        self.hid = 0
+        self.zones = []
+
+        self.lastMeasure = 0
+        
         if data:
             self.setup(data)
 
@@ -22,22 +22,20 @@ class Sensor():
     def setup(self, data):
         if 'hid' in data: 
             self.hid = data['hid']
-        if 'thresholds' in data:
-            self.thresholds = data['thresholds']
-            self.thresholds = sorted(self.thresholds, key=itemgetter(0), reverse=False)
-        if 'interpolation' in data:
-            self.interpolation = data['interpolation']
-        if 'dmxchannels' in data:
-            self.dmxchannels = data['dmxchannels']
+        if 'zones' in data:
+            for s in data['zones']:
+                self.addZone(s)
 
 
     def export(self):
         exp = {}
         exp['hid'] = self.hid
-        exp['dmxchannels'] = self.dmxchannels
-        exp['interpolation'] = self.interpolation
-        exp['thresholds'] = self.thresholds
+        for z in self.zones:
+            exp['zones'].append(z.export())
         return exp
+        
+    def addZone(self, data):
+        self.zones.append( Zone(data) )
 
 
     def process(self, measure):
@@ -46,23 +44,25 @@ class Sensor():
         if measure < 500:   
             return
 
-        selIndex = -1
-        for k, t in enumerate(self.thresholds):
-            if measure > t[0]:
-                selIndex = k
-        
-        dmxValue = 0
-        if selIndex >= 0:
-            dmxValue = self.thresholds[selIndex][1]
-                
-            if self.interpolation == 1:    
-                if len(self.thresholds) > selIndex+1:
-                    dmxValue = interpol(measure, self.thresholds[selIndex][0], self.thresholds[selIndex+1][0], self.thresholds[selIndex][1], self.thresholds[selIndex+1][1])
-        
-        for c in self.dmxchannels:
-            self.dmxout.dmx.set_channel(c, dmxValue)
-            print('sensor', self.hid, measure, c, dmxValue)
-        if len(self.dmxchannels) > 0:
+        # APPLY DMX
+        dirty = False
+        for z in self.zones:
+            for data in z.process(measure):
+                self.dmxout.dmx.set_channel(data[0], data[1])
+                # print('dmx', data[0], data[1])
+                dirty = True
+    
+        if dirty:
             self.dmxout.dmx.submit()
 
         self.lastMeasure = measure
+
+
+    def blackout(self, submit=True):
+        for z in self.zones:
+            for c in z.dmxchannels:
+                self.dmxout.dmx.set_channel(c, 0)
+        if submit:
+            self.dmxout.dmx.submit()
+
+    

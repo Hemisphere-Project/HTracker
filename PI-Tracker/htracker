@@ -13,8 +13,8 @@ M5usb = M5Interface()
 M5usb.logEvents = False
 M5usb.start()
 
-DMXin = DmxInput(1, 'sceneselect', 10)
-# DMXin.logEvents = False
+DMXin = DmxInput(150, 'sceneselect', 1)
+DMXin.logEvents = False
 DMXin.start()
 
 DMXout = DmxOutput()
@@ -30,14 +30,32 @@ Book = SceneBook(DMXout, scenario)
 # SCENE Select
 @DMXin.on("sceneselect")
 def ss(ev, sceneN):
+    print('Scene Select', sceneN)
+
+    DMXout.dmx.clear_channels()
+
     Book.selectscene(sceneN)
+    
+    if sceneN == 0: M5usb.pause()
+    else:           M5usb.play()
+    
+    DMXout.dmx.submit()
+
+
+# FWD DMXin
+@DMXin.on("dmxin")
+def fwd(ev, buffer):
+    if Book.activeScene == 0:
+        DMXout.setBuffer(buffer)
+
 
 # MEASURE process
 @M5usb.on('measure')
 def ms(ev, data):
     Book.process(data['sensor'], data['value'])
 
-#WATCH scenario
+
+#WATCH scenario RELOAD
 def scenarioreload(e):
     if e.src_path.endswith("scenario.json"):
         # print('reload', e)

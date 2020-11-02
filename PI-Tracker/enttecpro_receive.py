@@ -74,13 +74,22 @@ class DmxInput (BaseInterface):
                         if frameLength == 0:
                             self.log("Empty frame received")
                         elif buffer[0] > 0:
-                            self.log("Overflow/Overrun occured")
+                            # self.log("Overflow/Overrun occured")
+                            pass
                         else:
                             buffer.pop(0)
-                            val = math.floor(buffer[self._addrin]/self._rangedivider)
+
+                            # Scene select
+                            val = math.floor(buffer[self._addrin]*100/255/self._rangedivider)
+                            # self.log(self._addrin, buffer[self._addrin], val)
                             if val != self._cache:
                                 self._cache = val
                                 self.emit(self._eventname, self._cache)
+
+                            # Fwd dmx IN
+                            self.emit('dmxin', buffer)
+
+
 
                     frameStarted = False
                     continue

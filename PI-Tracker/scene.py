@@ -35,6 +35,10 @@ class Scene():
             if s.hid == sensorHID:
                 s.process(measure)
 
+    def blackout(self, submit=True):
+        for s in self.sensors:
+            s.blackout(submit)
+
 
 
 class SceneBook():
@@ -43,12 +47,23 @@ class SceneBook():
         self.dmxout = dmxout
         self.file = file
 
-        self.scenes = [None]*25
+        self.scenes = [None]*256
         self.activeScene = 0
         
     def selectscene(self, sceneN):
-        if sceneN < len(self.scenes) and self.scenes[sceneN]: 
+        if sceneN < len(self.scenes): 
+
+            # blackout old sensors
+            if self.activeScene > 0 and self.scenes[self.activeScene]:
+                self.scenes[self.activeScene].blackout(False)
+
+            # change scene
             self.activeScene = sceneN
+
+            # blackout new sensors
+            if self.activeScene > 0 and self.scenes[self.activeScene]:
+                self.scenes[self.activeScene].blackout(False)
+
 
     def setup(self, data):
         if 'scenes' in data:
