@@ -80,5 +80,6 @@ uint16_t tera_read()
         value = (buf[0]<<8) + buf[1];            // Calculate distance in mm
     
     if (value > 50000) value = 0;
+    if (value == 1) value = 0;
     return value;       
 }

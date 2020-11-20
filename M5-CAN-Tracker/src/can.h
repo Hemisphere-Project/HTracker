@@ -11,7 +11,7 @@ bool can_setup()
 {
   pinMode(CAN0_INT, INPUT);
 
-  if(CAN0.begin(MCP_ANY, CAN_1000KBPS, MCP_16MHZ) == CAN_OK) {
+  if(CAN0.begin(MCP_ANY, CAN_250KBPS, MCP_16MHZ) == CAN_OK) {
       CAN0.setMode(MCP_NORMAL);   // Change to normal mode to allow messages to be transmitted
       return true;
   }
