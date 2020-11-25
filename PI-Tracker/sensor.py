@@ -28,8 +28,7 @@ class Sensor():
 
 
     def export(self):
-        exp = {}
-        exp['hid'] = self.hid
+        exp = {'hid': self.hid, 'zones':[]}
         for z in self.zones:
             exp['zones'].append(z.export())
         return exp

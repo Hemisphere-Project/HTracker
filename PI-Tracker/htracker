@@ -1,31 +1,65 @@
 #!/usr/bin/env python3
 
+from DMXEnttecPro.utils import show_port_details
 from m5_receive import M5Interface
 from enttecpro_receive import DmxInput
 from enttecpro_send import DmxOutput
 from scene import SceneBook
+from webserver import Webserver
 from time import sleep
 import sys, signal, os
 from watchdog.observers import Observer
 from watchdog.events import PatternMatchingEventHandler
+import eventlet
+import socketio
 
-M5usb = M5Interface()
+#
+# START
+#
+
+# HELLO
+print("\n.:: HTRACKER ::.\n")
+
+# AVAILABLE ports
+print("Available serial ports:")
+show_port_details()
+print()
+
+# OPEN M5
+M5usb = M5Interface('01DB750E')
 M5usb.logEvents = False
 M5usb.start()
 
-DMXin = DmxInput(150, 'sceneselect', 1)
+# OPEN DMX IN
+DMXin = DmxInput('EN169216', 150, 'sceneselect', 1)
 DMXin.logEvents = False
 DMXin.start()
 
-DMXout = DmxOutput()
+# OPEN DMX OUT
+DMXout = DmxOutput('EN159845')
 # DMXout.test = True
 DMXout.start()
 
+# OPEN SCENARIO
 scenario = '/data/htracker-scenario.json'
 if len(sys.argv) > 1:
     scenario = os.path.join('/data', 'htracker-'+sys.argv[1]+'.json')
-
 Book = SceneBook(DMXout, scenario)
+print("Scenario loaded: ")
+print(Book.export())
+print()
+
+
+#
+# INTERFACE
+#
+
+web = Webserver(Book)
+web.start()
+
+#
+# EVENTS
+#
 
 # SCENE Select
 @DMXin.on("sceneselect")
@@ -66,20 +100,32 @@ observer = Observer()
 observer.schedule(handler, os.path.dirname(os.path.realpath(scenario)) )
 observer.start()
 
-# Book.setup( {'scenes': [
-#     {'sensors': [
-#         {
-#             'hid':1,
-#             'dmxchannels': [1],
-#             'interpolation': 0,
-#             'thresholds': [(500, 10), (1000, 100), (2000, 255)]
-#         }
-#     ]}
-# ]} )
 
-# Book.save()
 
-Book.load()
+
+# WEB SERVER
+# sio = socketio.Server()
+# app = socketio.WSGIApp(sio, static_files = {
+#     '/': {'content_type': 'text/html', 'filename': './www/index.html'},
+#     '/static': './www',
+# })
+
+# @sio.event
+# def connect(sid, environ):
+#     print('connect ', sid)
+
+# @sio.event
+# def my_message(sid, data):
+#     print('message ', data)
+
+# @sio.event
+# def disconnect(sid):
+#     print('disconnect ', sid)
+
+# if __name__ == '__main__':
+#     eventlet.wsgi.server(eventlet.listen(('', 5000)), app)
+
+
 
 def signal_handler(sig, frame):
     print('You pressed Ctrl+C!')

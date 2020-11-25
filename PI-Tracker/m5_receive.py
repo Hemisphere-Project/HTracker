@@ -1,5 +1,4 @@
 import time
-from base import BaseInterface
 import serial
 from base import BaseInterface
 from datetime import datetime
@@ -7,8 +6,10 @@ from DMXEnttecPro.utils import get_port_by_serial_number
 
 class M5Interface (BaseInterface):
 
-    def __init__(self):
+    def __init__(self, portname):
         super().__init__("M5", "red")
+        self.portname = portname
+        self.serialok = False
         self._book = {}
         self.playing = True
         self.wasPaused = True
@@ -18,11 +19,16 @@ class M5Interface (BaseInterface):
 
     def listen(self):
 
-        port = get_port_by_serial_number('01DB750E')   
-        self.log("Starting M5 receiver on port", port)
-        self.pause()
-
-        self._serial = serial.Serial(port, timeout=0.1, baudrate=115200)
+        while self.isRunning() and not self.serialok:
+            try:
+                port = get_port_by_serial_number(self.portname)   
+                self.log("Starting M5 receiver on port", port)
+                self.pause()
+                self._serial = serial.Serial(port, timeout=0.1, baudrate=115200)
+                self.serialok = True
+            except:
+                self.log("ERROR: ", self.portname, "not found.. retrying")
+                time.sleep(5)
 
         while self.isRunning():
 

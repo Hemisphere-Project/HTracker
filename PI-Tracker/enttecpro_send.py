@@ -6,20 +6,27 @@ import time
 
 class DmxOutput (BaseInterface):
 
-    def __init__(self):
+    def __init__(self, portname):
         super().__init__("DMX out", "green")
+        self.portname=portname
+        self.serialok = False
         self.test = False
 
     def listen(self):
 
-        port = get_port_by_serial_number('EN159845')
-        self.log("Starting DMX sender on port", port)
+        while self.isRunning() and not self.serialok:
+            try:
+                port = get_port_by_serial_number(self.portname)
+                self.log("Starting DMX sender on port", port)
+                self.dmx = Controller(port)
+                self.serialok = True
+            except:
+                self.log("ERROR: ", self.portname, "not found.. retrying")
+                time.sleep(5)
 
-        self.dmx = Controller(port)
-
-        i = 0
         self.stopped.wait()
 
+        # i = 0
         # while self.isRunning():
         #     if not self.test:
         #         time.sleep(0.2)

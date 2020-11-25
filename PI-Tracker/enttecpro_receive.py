@@ -2,26 +2,33 @@ import serial
 import math
 from base import BaseInterface
 from DMXEnttecPro.utils import get_port_by_serial_number
+from time import sleep
 
 # ENTTEC FRAME specs:
 # https://github.com/SavinaRoja/DMXEnttecPro/blob/master/supplemental/dmx_usb_pro_api_spec.pdf
 
 class DmxInput (BaseInterface):
 
-    def __init__(self, addrin, eventname, rangedivider=10):
+    def __init__(self, portname, addrin, eventname, rangedivider=10):
         super().__init__("DMX in", "yellow")
+        self.portname=portname
         self._addrin = addrin
         self._rangedivider = rangedivider
         self._eventname = eventname
         self._cache = -1
-
+        self.serialok = False
 
     def listen(self):
 
-        port = get_port_by_serial_number('EN169216')   
-        self.log("Starting DMX receiver on port", port)
-
-        ser = serial.Serial(port, timeout=0.1, baudrate=250000, xonxoff=False, rtscts=False, dsrdtr=False) 
+        while self.isRunning() and not self.serialok:
+            try:
+                port = get_port_by_serial_number(self.portname)   
+                self.log("Starting DMX receiver on port", port)
+                ser = serial.Serial(port, timeout=0.1, baudrate=250000, xonxoff=False, rtscts=False, dsrdtr=False) 
+                self.serialok = True
+            except:
+                self.log("ERROR: ", self.portname, "not found.. retrying")
+                sleep(5)
 
         maxDataLength = 600
         buffer = [0]*maxDataLength
