@@ -47,15 +47,21 @@ class Sensor():
         dirty = False
         for z in self.zones:
             for data in z.process(measure):
-                self.dmxout.set(data[0], data[1])
+                self.dmxout.dmx.set_channel(data[0], data[1])
                 # print('dmx', data[0], data[1])
+                dirty = True
     
+        if dirty:
+            self.dmxout.dmx.submit()
+
         self.lastMeasure = measure
 
 
     def blackout(self, submit=True):
         for z in self.zones:
             for c in z.dmxchannels:
-                self.dmxout.set(c, 0, submit)
+                self.dmxout.dmx.set_channel(c, 0)
+        if submit:
+            self.dmxout.dmx.submit()
 
     

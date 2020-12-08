@@ -1,0 +1,186 @@
+/* Google Icons */
+
+@font-face {
+    font-family: 'Material Icons';
+    font-style: normal;
+    font-weight: 400;
+    src: url(/static/fonts/google-icons.woff2) format('woff2');
+}
+
+.material-icons {
+    font-family: 'Material Icons';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+}
+
+body {
+    background-color: #333;
+    color: #EEE;
+}
+
+#content {
+    padding: 20px;
+}
+
+
+/* SIDEMENU */
+
+#slide-out {
+    background-color: #111;
+    color: #EEE;
+}
+
+#slide-out h3 {
+    text-align: center;
+}
+
+.constate {
+    color: red;
+}
+
+.constate.connected {
+    color: green;
+}
+
+#slide-out a {
+    background-color: #222;
+    color: #EEE;
+    text-align: center;
+    margin: 6px 0;
+}
+
+#container {
+    padding-left: 300px;
+}
+
+.sidenav-trigger {
+    display: none;
+}
+
+@media only screen and (max-width: 992px) {
+    #container {
+        padding-left: 0px;
+    }
+    .sidenav-trigger {
+        display: inline;
+    }
+}
+
+
+/* SCENE TABLE */
+
+#scene-table {
+    /* border-collapse: separate; */
+}
+
+#scene-table td {
+    padding: 2px;
+    cursor: pointer;
+    width: 35px;
+    height: 35px;
+    font-size: 16px;
+}
+
+#scene-table td:hover {
+    background-color: #222;
+}
+
+#scene-table td.edit {
+    background-color: #333;
+}
+
+#scene-table td.active {
+    font-weight: bolder;
+    color: yellow;
+}
+
+
+/* SCENE */
+
+.scene h5 {
+    font-size: 1.2rem;
+    background-color: #111;
+    border: 1px solid #111;
+    margin: 0;
+    padding: 10px;
+}
+
+
+/* SENSOR */
+
+.sensor {
+    border: 1px solid #111;
+    padding: 10px;
+}
+
+.sensor h5 {
+    background-color: #222;
+    border: 1px solid #222;
+}
+
+.sensor input[type=number] {
+    width: 50px !important;
+    text-align: center;
+    color: black;
+    height: 2rem !important;
+    margin-bottom: 0px !important;
+    margin-left: 10px !important;
+    background-color: #888 !important;
+}
+
+
+/* ZONE */
+
+.sensor .row {
+    border: 1px solid #222;
+    border-top: 0px;
+    padding: 10px;
+    margin: 0 !important;
+    text-align: center;
+}
+
+.zone .chips {
+    height: 2rem !important;
+    margin: 0px !important;
+    background-color: #888 !important;
+    min-height: 24px;
+}
+
+.zone .chips .chip {
+    display: inline-block;
+    height: 24px;
+    font-size: 14px;
+    line-height: 25px;
+    padding: 0 8px;
+    border-radius: 0px;
+    margin-bottom: 0px;
+    margin-right: 5px;
+}
+
+.zone .chips .chip .close {
+    line-height: 24px;
+}
+
+.zone .chips .input {
+    background: none;
+    border: 0;
+    color: rgba(0, 0, 0, 0.6);
+    display: inline-block;
+    font-size: 16px;
+    height: 2rem;
+    line-height: 24px;
+    outline: 0;
+    margin: 0;
+    padding: 0 !important;
+    width: 70px !important;
+}

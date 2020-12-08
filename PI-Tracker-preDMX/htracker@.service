@@ -1,0 +1,11 @@
+[Unit]
+Description=HTracker
+           
+[Service]
+Type=simple
+ExecStart=htracker %i
+ExecStop=pkill htracker
+Restart=always
+           
+[Install]
+WantedBy=default.target

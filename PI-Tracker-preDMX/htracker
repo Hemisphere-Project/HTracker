@@ -2,7 +2,8 @@
 
 from DMXEnttecPro.utils import show_port_details
 from m5_receive import M5Interface
-from dmx32 import Dmx32
+from enttecpro_receive import DmxInput
+from enttecpro_send import DmxOutput
 from scene import SceneBook
 from webserver import Webserver
 from time import sleep
@@ -29,16 +30,21 @@ M5usb = M5Interface('01DB750E')
 M5usb.logEvents = False
 M5usb.start()
 
-# OPEN DMX32
-DMX32 = Dmx32('0001', 42, 'sceneselect', 1)
-DMX32.start()
+# OPEN DMX IN
+DMXin = DmxInput('EN169216', 150, 'sceneselect', 1)
+DMXin.logEvents = False
+DMXin.start()
 
+# OPEN DMX OUT
+DMXout = DmxOutput('EN159845')
+# DMXout.test = True
+DMXout.start()
 
 # OPEN SCENARIO
 scenario = '/data/htracker-scenario.json'
 if len(sys.argv) > 1:
     scenario = os.path.join('/data', 'htracker-'+sys.argv[1]+'.json')
-Book = SceneBook(DMX32, scenario)
+Book = SceneBook(DMXout, scenario)
 print("Scenario loaded: ")
 print(Book.export())
 print()
@@ -56,16 +62,25 @@ web.start()
 #
 
 # SCENE Select
-@DMX32.on("sceneselect")
+@DMXin.on("sceneselect")
 def ss(ev, sceneN):
-    DMX32.dmx.clear_channels()
+    print('Scene Select', sceneN)
+
+    DMXout.dmx.clear_channels()
 
     Book.selectscene(sceneN)
     
     if sceneN == 0: M5usb.pause()
     else:           M5usb.play()
     
-    DMX32.push()
+    DMXout.dmx.submit()
+
+
+# FWD DMXin
+@DMXin.on("dmxin")
+def fwd(ev, buffer):
+    if Book.activeScene == 0:
+        DMXout.setBuffer(buffer)
 
 
 # MEASURE process
@@ -115,7 +130,8 @@ observer.start()
 def signal_handler(sig, frame):
     print('You pressed Ctrl+C!')
     M5usb.quit()
-    DMX32.quit()
+    DMXin.quit()
+    DMXout.quit()
     sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
