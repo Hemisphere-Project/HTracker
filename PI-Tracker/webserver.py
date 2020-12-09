@@ -63,9 +63,11 @@ class Webserver (BaseInterface):
 
         @self.sio.event
         def save(sid, data):
+            M5.pause()
             self.book.clear()
             self.book.setup(data)
             self.book.save()
+            M5.play()
             self.log('Web scenario saved')
 
         # @self.sio.event
