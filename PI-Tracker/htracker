@@ -30,7 +30,7 @@ M5usb.logEvents = False
 M5usb.start()
 
 # OPEN DMX32
-DMX32 = Dmx32('0001', 42, 'sceneselect', 2.55)
+DMX32 = Dmx32('0001', 150, 'sceneselect', 2.55)
 DMX32.start()
 
 
