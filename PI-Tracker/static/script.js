@@ -315,7 +315,7 @@ $(document).ready(function() {
 
 // SOCKETIO
 // 
-var wsURL = window.location.origin + ':5000'
+var wsURL = window.location.origin
 
 console.log('connecting to ', wsURL)
 var socket = io(wsURL);
