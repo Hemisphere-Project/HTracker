@@ -14,7 +14,7 @@ class Webserver (BaseInterface):
         self.M5 = M5
         self.DMX32 = DMX32
 
-        self.sio = socketio.Server(logger=False, async_mode='gevent')
+        self.sio = socketio.Server(logger=False, async_mode='eventlet')
         self.app = Flask(__name__)
         self.app.wsgi_app = socketio.WSGIApp(self.sio, self.app.wsgi_app)
         self.app.config['SECRET_KEY'] = '*secret!*'
@@ -115,17 +115,16 @@ class Webserver (BaseInterface):
         
         self.log('starting')
 
-        # deploy with gevent
-        from gevent import pywsgi
-        from geventwebsocket.handler import WebSocketHandler
-        self.server = pywsgi.WSGIServer(('', 5000), self.app, handler_class=WebSocketHandler)
-        self.server.serve_forever()
+        # deploy with eventlet
+        import eventlet
+        import eventlet.wsgi
+        eventlet.wsgi.server(eventlet.listen(('', 5000)), self.app)
 
     # Stop
     def quit(self):
         self.log("stopping...")
         self.stopped.set()
-        self.server.stop()
+        # TODO: proper shutdown
         self.recvThread.join()
         self.log("stopped")
 
