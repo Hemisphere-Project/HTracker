@@ -10,9 +10,8 @@ class M5Interface (BaseInterface):
         super().__init__("M5", "red")
         self.portname = portname
         self.serialok = False
-        self._book = {}
         self.playing = True
-        self.wasPaused = True
+        self._book = {}
         self._serial = None
         self._buffer = []
 
@@ -31,22 +30,23 @@ class M5Interface (BaseInterface):
                 time.sleep(5)
 
         while self.isRunning():
+            try:
+                readChar = self._serial.read()
+                self.serialok = True
+            except:
+                self.log('Serial Read error..')
+                self.serialok = False
+            
+            if readChar == b'\n' or readChar == b'\r':
+                if len(self._buffer):
+                    self.process(self._buffer)
+                    self._buffer = []
+            elif readChar != '':
+                self._buffer.append(readChar)           
 
-            if self.playing:
-                try:
-                    readChar = self._serial.read()
-                except:
-                    self.log('Serial Read error..')
-                
-                if readChar == b'\n' or readChar == b'\r':
-                    if len(self._buffer):
-                        self.process(self._buffer)
-                        self._buffer = []
-                elif readChar != '':
-                    self._buffer.append(readChar)                
+        if self._serial:
+            self._serial.close()     
 
-            else:
-                time.sleep(0.1)
 
 
     def process(self, buffer):
@@ -67,9 +67,12 @@ class M5Interface (BaseInterface):
             except: 
                 return
 
+            # ignore duplicates
             if sensor in self._book and self._book[sensor]['value'] == measure:
                 pass
-            else:
+
+            # save and emit new measure
+            elif self.playing:
                 self._book[sensor] = {'sensor':sensor, 'value': measure}
                 self.emit('measure', self._book[sensor])
 
@@ -78,25 +81,13 @@ class M5Interface (BaseInterface):
             self.emit('event', data, buffer)
 
 
-
     def pause(self):
         self.log("Paused")
         self.playing = False
-        self.wasPaused = True
+        self._book = {}
+
 
     def play(self):
         self.log("Play")
-        
-        if self.playing:
-            self.playing = False
-        else:
-            self._book = {}
-    
-        if self._serial:
-            self._serial.reset_input_buffer()
-            self._buffer = []
-
-        for s in self._book:
-            self.emit('measure', self._book[s])
         self.playing = True
 

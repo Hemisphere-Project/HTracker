@@ -8,30 +8,54 @@
 
 #define DMX_SERIAL_OUTPUT_PIN 21
 
-#define DMX_CTRL_ADDR 42
-
-
 uint8_t ctrl_value = 0;
 uint8_t dataChanged = 1;
 
 bool listenToUSB = false;
 
+/************************************************************************
+  Change/ Access CTRL addr
+*************************************************************************/
+uint32_t CTRL_ADDR = 150;
+SemaphoreHandle_t ctrlMutex;
+
+uint32_t ctrlADDR() {
+  uint32_t addr;
+  xSemaphoreTake( ctrlMutex, portMAX_DELAY );
+  addr = CTRL_ADDR;
+  xSemaphoreGive( ctrlMutex );
+  return addr;
+}
+
+void ctrlADDR(uint32_t addr) {
+  xSemaphoreTake( ctrlMutex, portMAX_DELAY );
+  CTRL_ADDR = addr;
+  xSemaphoreGive( ctrlMutex );
+  Serial.printf("#CTRL addr set: %d\n", addr);
+}
+
+
+/************************************************************************
+  DMX input Callback
+*************************************************************************/
 
 void receiveCallback(int slots) {
-  int MAX_DMX = min(slots, DMX_MAX_FRAME);
-	if ( slots ) {
+  
+	if ( slots ) 
+	{
+      int MAX_DMX = min(slots, DMX_MAX_FRAME);
 	    xSemaphoreTake( ESP32DMX.lxDataLock, portMAX_DELAY );
 
       // GET CTRL VALUE
-  		if ( ctrl_value != ESP32DMX.getSlot(DMX_CTRL_ADDR) ) {
-  			ctrl_value = ESP32DMX.getSlot(DMX_CTRL_ADDR);
+  		if ( ctrl_value != ESP32DMX.getSlot( ctrlADDR() ) ) {
+  			ctrl_value = ESP32DMX.getSlot( ctrlADDR() );
   			dataChanged = 1;
 
-        if (ctrl_value == 0) listenToUSB = false;
+        listenToUSB = (ctrl_value > 0);
   		}
 
       // DMX THRU
-      if (ctrl_value == 0) {
+      if (!listenToUSB) {
         xSemaphoreTake( ESP32DMX1.lxDataLock, portMAX_DELAY );
         for (int i=1; i<MAX_DMX; i++) ESP32DMX1.setSlot(i , ESP32DMX.getSlot(i));
         xSemaphoreGive( ESP32DMX1.lxDataLock );
@@ -48,10 +72,13 @@ void receiveCallback(int slots) {
 	setup
 *************************************************************************/
 void setup() {
+  Serial.begin(115200);
+  
   WiFi.mode(WIFI_OFF);
   btStop();
 
-  Serial.begin(115200);
+  ctrlMutex = xSemaphoreCreateBinary();
+  xSemaphoreGive( ctrlMutex );
 
   // DISARM RX2 (using gpio15)
   pinMode(15, OUTPUT);
@@ -85,8 +112,7 @@ void setup() {
 
 
 /************************************************************************
-	main loop just idles
-	vTaskDelay is called to prevent wdt timeout
+	LOOP
 *************************************************************************/
 
 void loop() {
@@ -95,21 +121,10 @@ void loop() {
   if ( dataChanged ) 
   {
     dataChanged = 0;
-    Serial.print(DMX_CTRL_ADDR);
+    Serial.print( ctrlADDR() );
     Serial.print(":");
-    Serial.println(ctrl_value);
-
-    // RESET dmxbuffer (and wait for USB dmx)
-    if (ctrl_value > 0) {
-      xSemaphoreTake( ESP32DMX1.lxDataLock, portMAX_DELAY );
-      ESP32DMX1.clearSlots();
-      listenToUSB = true;
-      xSemaphoreGive( ESP32DMX1.lxDataLock ); 
-    }
-    
+    Serial.println(ctrl_value);    
   } else {
     delay(5);
   }
-
-  
 }

@@ -1,6 +1,10 @@
 
-class Zone():
+from base import EventEmitterX
+
+class Zone(EventEmitterX):
     def __init__(self, data=None):
+        super().__init__('Zone', 'magenta')
+
         self.dmxchannels = []
         self.dmxvalue = 255
         self.min = 0
@@ -12,13 +16,13 @@ class Zone():
 
     def setup(self, data):
         if 'dmxchannels' in data:
-            self.dmxchannels = data['dmxchannels']
+            self.dmxchannels = [int(c) for c in data['dmxchannels']]
         if 'dmxvalue' in data: 
-            self.dmxvalue = data['dmxvalue']
+            self.dmxvalue = int(data['dmxvalue'])
         if 'min' in data:
-            self.min = data['min']
+            self.min = int(data['min'])
         if 'max' in data:
-            self.max = data['max']
+            self.max = int(data['max'])
 
 
     def export(self):

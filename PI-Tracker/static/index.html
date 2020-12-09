@@ -8,12 +8,16 @@
     <link rel="icon" href="/static/img/favicon.ico" />
 
     <title>HTracker</title>
-    <link rel="stylesheet" href="/static/stylesheet.css" />
+    <link href="/static/libs/nouislider/nouislider.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/static/libs/materialize/css/materialize.min.css" />
+    <link rel="stylesheet" href="/static/stylesheet.css" />
 
     <script src="/static/libs/jquery-3.5.1.min.js"></script>
     <script src="/static/libs/materialize/js/materialize.min.js"></script>
     <script src="/static/libs/socket.io.2.3.1.min.js" crossorigin="anonymous"></script>
+
+    <script src="/static/libs/nouislider/wNumb.min.js"></script>
+    <script src="/static/libs/nouislider/nouislider.min.js"></script>
 </head>
 
 <body>
@@ -25,8 +29,14 @@
                 <li>
                     <h3 class="constate">HTracker</h3>
                 </li>
-                <li><a href="#!">SETTINGS</a></li>
-                <li><a href="#!">SCENES</a></li>
+                <li><a href="#!">STATUS</a></li>
+                <li>
+                    <div class="status">
+                        <span id="CANstatus">CAN</span> <span id="DMXstatus">DMX</span> <br /><span id="MEASstatus"></span>
+                    </div>
+
+                </li>
+                <li><a href="#!">SCENES <span id="scenectrl"></span></a></li>
                 <li class="no-padding">
                     <table id="scene-table" class="centered">
                         <tr>

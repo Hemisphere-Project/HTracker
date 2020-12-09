@@ -1,20 +1,20 @@
 from sensor import Sensor
+from base import EventEmitterX
 import json, os
 
 
-class Scene():
+class Scene (EventEmitterX):
 
-    def __init__(self, dmxout, data=None):
-        self.dmxout = dmxout
+    def __init__(self, data=None):
+        super().__init__('Scene', 'magenta')
 
         self.sensors = []
-
         if data:
             self.setup(data)
 
 
     def addSensor(self, data):
-        self.sensors.append( Sensor(self.dmxout, data) )
+        self.sensors.append( Sensor(data) )
 
 
     def setup(self, data):
@@ -31,20 +31,18 @@ class Scene():
 
 
     def process(self, sensorHID, measure):
+        result = []
         for s in self.sensors:
             if s.hid == sensorHID:
-                s.process(measure)
-
-    def blackout(self, submit=True):
-        for s in self.sensors:
-            s.blackout(submit)
+                result += s.process(measure)
+        return result
 
 
+class SceneBook (EventEmitterX):
 
-class SceneBook():
+    def __init__(self, file):
+        super().__init__('Book', 'magenta')
 
-    def __init__(self, dmxout, file):
-        self.dmxout = dmxout
         self.file = file
 
         self.scenes = [None]*256
@@ -53,25 +51,18 @@ class SceneBook():
         self.load()
         
     def selectscene(self, sceneN):
-        if sceneN < len(self.scenes): 
+        self.activeScene = sceneN
 
-            # blackout old sensors
-            if self.activeScene > 0 and self.scenes[self.activeScene]:
-                self.scenes[self.activeScene].blackout(False)
 
-            # change scene
-            self.activeScene = sceneN
-
-            # blackout new sensors
-            if self.activeScene > 0 and self.scenes[self.activeScene]:
-                self.scenes[self.activeScene].blackout(False)
+    def clear(self):
+        self.scenes = [None]*256
 
 
     def setup(self, data):
         if 'scenes' in data:
             for k, s in enumerate(data['scenes']):
-                if s:
-                    self.scenes[k] = Scene(self.dmxout, s)
+                if s: self.scenes[k] = Scene(s)
+
 
     def export(self):
         exp = {'scenes': []}
@@ -81,6 +72,7 @@ class SceneBook():
             else:
                 exp['scenes'].append(None)
         return exp
+
 
     def save(self):
         jdata = json.dumps( self.export(), indent=4 )
@@ -101,24 +93,28 @@ class SceneBook():
                                         {"dmxchannels": [2], "dmxvalue": 255, "min": 3000, "max": 4000}
                                     ]}]}
 
+            self.clear()
             self.setup(template)
             self.save()
 
         # Loading scenario from file
-        try:
-            with open(self.file, "r") as f:
-                jdata = f.read()
-            jdata=json.loads(jdata)
-            self.setup( jdata )
-            print("- reload scenario")
-        except:
-            print("error while loading scenario..")
+        # try:
+        with open(self.file, "r") as f:
+            jdata = f.read()
+        jdata=json.loads(jdata)
+        self.clear()
+        self.setup( jdata )
+        print("- reload scenario")
+        # except:
+        #     print("error while loading scenario..")
 
 
     
     def process(self, sensorHID, measure):
+        result = []
         if self.activeScene >= 0 and self.activeScene < len(self.scenes):
             if self.scenes[self.activeScene]: 
-                self.scenes[self.activeScene].process(sensorHID, measure)
+                result = self.scenes[self.activeScene].process(sensorHID, measure)
+        return result
 
     

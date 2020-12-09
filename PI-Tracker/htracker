@@ -30,7 +30,7 @@ M5usb.logEvents = False
 M5usb.start()
 
 # OPEN DMX32
-DMX32 = Dmx32('0001', 42, 'sceneselect', 1)
+DMX32 = Dmx32('0001', 42, 'sceneselect', 2.55)
 DMX32.start()
 
 
@@ -38,7 +38,7 @@ DMX32.start()
 scenario = '/data/htracker-scenario.json'
 if len(sys.argv) > 1:
     scenario = os.path.join('/data', 'htracker-'+sys.argv[1]+'.json')
-Book = SceneBook(DMX32, scenario)
+Book = SceneBook(scenario)
 print("Scenario loaded: ")
 print(Book.export())
 print()
@@ -47,8 +47,7 @@ print()
 #
 # INTERFACE
 #
-
-web = Webserver(Book)
+web = Webserver(Book, M5usb, DMX32)
 web.start()
 
 #
@@ -58,20 +57,19 @@ web.start()
 # SCENE Select
 @DMX32.on("sceneselect")
 def ss(ev, sceneN):
-    DMX32.dmx.clear_channels()
-
+    M5usb.pause()
+    DMX32.clear()
     Book.selectscene(sceneN)
-    
-    if sceneN == 0: M5usb.pause()
-    else:           M5usb.play()
-    
-    DMX32.push()
+    M5usb.play()
 
 
 # MEASURE process
 @M5usb.on('measure')
 def ms(ev, data):
-    Book.process(data['sensor'], data['value'])
+    result = Book.process(data['sensor'], data['value'])
+    for m in result:
+        DMX32.set(m[0], m[1])
+
 
 
 #WATCH scenario RELOAD
@@ -87,35 +85,11 @@ observer.start()
 
 
 
-
-# WEB SERVER
-# sio = socketio.Server()
-# app = socketio.WSGIApp(sio, static_files = {
-#     '/': {'content_type': 'text/html', 'filename': './www/index.html'},
-#     '/static': './www',
-# })
-
-# @sio.event
-# def connect(sid, environ):
-#     print('connect ', sid)
-
-# @sio.event
-# def my_message(sid, data):
-#     print('message ', data)
-
-# @sio.event
-# def disconnect(sid):
-#     print('disconnect ', sid)
-
-# if __name__ == '__main__':
-#     eventlet.wsgi.server(eventlet.listen(('', 5000)), app)
-
-
-
 def signal_handler(sig, frame):
     print('You pressed Ctrl+C!')
     M5usb.quit()
     DMX32.quit()
+    web.quit()
     sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)

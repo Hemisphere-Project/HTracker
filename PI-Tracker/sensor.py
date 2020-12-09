@@ -1,27 +1,26 @@
 from operator import itemgetter
+from base import EventEmitterX
 from zone import Zone
 
 def interpol(x, in_min, in_max, out_min, out_max):
   return int((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min);
 
 
-class Sensor():
+class Sensor (EventEmitterX):
 
-    def __init__(self, dmxout, data=None):
-        self.dmxout = dmxout
+    def __init__(self, data=None):
+        super().__init__('Sensor', 'magenta')
 
         self.hid = 0
         self.zones = []
 
-        self.lastMeasure = 0
-        
         if data:
             self.setup(data)
 
 
     def setup(self, data):
         if 'hid' in data: 
-            self.hid = data['hid']
+            self.hid = int(data['hid'])
         if 'zones' in data:
             for s in data['zones']:
                 self.addZone(s)
@@ -41,21 +40,14 @@ class Sensor():
         
         # IGNORE - <500 -
         if measure < 500:   
-            return
+            return []
 
         # APPLY DMX
-        dirty = False
+        result = []
         for z in self.zones:
-            for data in z.process(measure):
-                self.dmxout.set(data[0], data[1])
-                # print('dmx', data[0], data[1])
+            result += z.process(measure)
+        return result
+        
     
-        self.lastMeasure = measure
-
-
-    def blackout(self, submit=True):
-        for z in self.zones:
-            for c in z.dmxchannels:
-                self.dmxout.set(c, 0, submit)
 
     
