@@ -53,18 +53,8 @@ String txt_title  =  "HTracker ";
 String txt_hid    =  "HID: ";
 bool wifiConnected = false;
 
-
-void wifiEvent(WiFiEvent_t event) 
-{
-  if (event == SYSTEM_EVENT_STA_DISCONNECTED) wifiConnected = false;
-  else if (event == SYSTEM_EVENT_STA_GOT_IP)
-  {
-    ArduinoOTA.begin();
-    wifiConnected = true;
-    Serial.print("IP address: ");
-    Serial.println(WiFi.localIP());
-  }
-}
+void usbRead();
+void wifiSetup();
 
 // SETUP
 // 
@@ -131,18 +121,9 @@ void setup()
   ez.canvas.print("[INIT ] Starting CAN Bus.. ");
   if (can_setup()) ez.canvas.println("OK!");
   else ez.canvas.println("ERROR");
- 
-  // Ready
-  ez.canvas.println("[WIFI] Trying to connect HTracker ");
 
   // WIFI
-  //
-  String hostname = "tracker-"+String(HID)+"-v"+String(HVERSION);
-  WiFi.mode(WIFI_STA);
-  WiFi.onEvent(wifiEvent);
-  WiFi.setHostname(hostname.c_str());
-  WiFi.begin("HTracker", "supernet");
-  ArduinoOTA.setHostname( hostname.c_str() );
+  wifiSetup();
 
   delay(1000);
 }
@@ -150,10 +131,11 @@ void setup()
 
 void loop() 
 {
-
   // MODE RECV: listen and process
   if (MODE == 0) 
   {
+    usbRead();
+
     CanMessage* msg = can_read();
 
     // Valid MSG
@@ -253,3 +235,63 @@ void loop()
   if (wifiConnected) ArduinoOTA.handle();
 }
 
+
+// WIFI
+//
+
+void wifiEvent(WiFiEvent_t event) 
+{
+  if (event == SYSTEM_EVENT_STA_DISCONNECTED) wifiConnected = false;
+  else if (event == SYSTEM_EVENT_STA_GOT_IP)
+  {
+    ArduinoOTA.begin();
+    wifiConnected = true;
+    // Serial.print("IP address: ");
+    // Serial.println(WiFi.localIP());
+    ez.canvas.println("[WIFI] connected IP: "+String(WiFi.localIP().toString()));
+  }
+}
+
+void wifiSetup() 
+{ 
+  String ssid = "HTracker";
+  String pass = "supernet";
+  // Ready
+  ez.canvas.println("[WIFI] connect "+ssid+"/"+pass);
+
+  String hostname = "tracker-"+String(HID)+"-v"+String(HVERSION);
+  WiFi.mode(WIFI_STA);
+  WiFi.onEvent(wifiEvent);
+  WiFi.setHostname(hostname.c_str());
+  WiFi.begin(ssid.c_str(), pass.c_str());
+  WiFi.setAutoReconnect(true);
+  WiFi.persistent(true);
+  ArduinoOTA.setHostname( hostname.c_str() );
+}
+
+// USB READ
+//
+char incomingByte = 0;
+char buffer = 0;
+void usbRead() {
+  if (Serial.available() > 0) {
+    incomingByte = Serial.read();
+
+    if (incomingByte == '\n') {
+      if (buffer == 0) return;
+
+      // Start wifi
+      if (buffer == 'w') wifiSetup();
+
+      // Reboot
+      else if (buffer == 'x') {
+        ESP.restart();
+        while(true) delay(10000);
+      }
+
+      buffer = 0;
+    } 
+    else buffer = incomingByte;
+
+  }
+}

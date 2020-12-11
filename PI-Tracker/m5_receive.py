@@ -29,6 +29,10 @@ class M5Interface (BaseInterface):
                 self.log("ERROR: ", self.portname, "not found.. retrying")
                 time.sleep(5)
 
+        if self.serialok:
+            self.log("M5 ready")
+            msg = ('w'+'\n').encode('utf-8')    # connect wifi (OTA)
+
         while self.isRunning():
             try:
                 readChar = self._serial.read()

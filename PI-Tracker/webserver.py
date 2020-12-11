@@ -69,6 +69,13 @@ class Webserver (BaseInterface):
             self.book.save()
             M5.play()
             self.log('Web scenario saved')
+            self.push_book()
+
+
+        @self.sio.event
+        def reset(sid):
+            self.last_update = {}
+            self.push_book(sid)
 
         # @self.sio.event
         # def my_event(sid, message):
@@ -131,5 +138,8 @@ class Webserver (BaseInterface):
         self.log("stopped")
 
 
-    def push_book(self, sid):
-        self.sio.emit('scenario', self.book.export(), room=sid)
+    def push_book(self, sid=None):
+        if sid:
+            self.sio.emit('scenario', self.book.export(), room=sid)
+        else:
+            self.sio.emit('scenario', self.book.export())

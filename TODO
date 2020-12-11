@@ -1,18 +1,16 @@
 # TODO
 
 M5
-- Transfer rate
 - display on separate thread
 - Stabsize
 - OSC listen (remote laser, ping value)
+- OTA BROKEN !
 
 HW
-- Box regie
 - Calibration laser
-- Paint platines
 
 PI
-- UX interface
-- Changement de scene : 
-    Re-Trigger all measure
-- DMX Thru: latence !
+
+IFACE
+- freeze Range
+- manual save (loose change scene)

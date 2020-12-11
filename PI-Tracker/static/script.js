@@ -29,7 +29,7 @@ class Zone {
         this.i_ranger.get(0).noUiSlider.on('change', () => {
             that.min = Math.round(that.i_ranger.get(0).noUiSlider.get()[0] * 10) * 100
             that.max = Math.round(that.i_ranger.get(0).noUiSlider.get()[1] * 10) * 100
-            saveAll()
+            pendingChanges()
         })
 
 
@@ -40,7 +40,7 @@ class Zone {
             that.dmxvalue = Math.min(that.i_value.val(), 255)
             that.dmxvalue = Math.max(that.dmxvalue, 0)
             if (that.i_value.val() != that.dmxvalue) that.i_value.val(that.dmxvalue)
-            saveAll()
+            pendingChanges()
         })
 
         // DMX CHANNELS
@@ -55,7 +55,7 @@ class Zone {
                 var intValue = parseInt(value)
                 if ($.isNumeric(value) && intValue > 0 && intValue < 513 && !this.dmxchannels.includes(intValue)) {
                     that.dmxchannels.push(intValue)
-                    saveAll()
+                    pendingChanges()
                 } else $(chip).remove();
             },
             onChipDelete: (event, chip) => {
@@ -63,7 +63,7 @@ class Zone {
                 var intValue = parseInt(value)
                 const index = that.dmxchannels.indexOf(intValue);
                 if (index > -1) that.dmxchannels.splice(index, 1);
-                saveAll()
+                pendingChanges()
             }
         });
 
@@ -74,7 +74,7 @@ class Zone {
             if (!confirm('Supprimer cette zone ?')) return
             that.elem.remove()
             that.sensor.zones[that.id] = null
-            saveAll()
+            pendingChanges()
         })
 
         // APPEND TO SCENE
@@ -114,7 +114,7 @@ class Sensor {
             that.i_meas.removeClass('meas' + that.hid)
             that.hid = that.i_hid.val()
             that.i_meas.addClass('meas' + that.hid)
-            saveAll()
+            pendingChanges()
         })
 
         this.i_meas = $('<div class="measure meas' + this.hid + '"></div>')
@@ -122,7 +122,7 @@ class Sensor {
         this.add_zone = $('<a class="waves-effect waves-light btn-small green darken-4"><i class="material-icons left">add</i>zone</a>')
         this.add_zone.on('click', () => {
             that.addZone()
-            saveAll()
+            pendingChanges()
         })
 
         this.rm_sensor = $('<a class="waves-effect waves-light btn-small red darken-4"><i class="material-icons">close</i></a>')
@@ -130,7 +130,7 @@ class Sensor {
             if (!confirm('Supprimer ce capteur ?')) return
             that.elem.remove()
             that.scene.sensors[that.id] = null
-            saveAll()
+            pendingChanges()
         })
 
         $('<h5>CAPTEUR</h5>')
@@ -189,10 +189,15 @@ class Scene {
         this.add_sensor = $('<a class="waves-effect waves-light btn-small green darken-4"><i class="material-icons left">add</i>capteur</a>')
         this.add_sensor.on('click', () => {
             that.addSensor()
+            pendingChanges()
+        })
+
+        this.save_changes = $('<a class="waves-effect waves-light btn-small yellow darken-4"><i class="material-icons left">save</i>enregistrer</a>')
+        this.save_changes.on('click', () => {
             saveAll()
         })
 
-        $('<h5>SCENE ' + this.id + '</h5>').append(this.add_sensor).appendTo(this.elem)
+        $('<h5>SCENE ' + this.id + '</h5>').append(this.add_sensor).append(this.save_changes).appendTo(this.elem)
 
         if (data)
             for (const s of data['sensors']) this.addSensor(s)
@@ -246,6 +251,8 @@ class SceneBook {
         $("input[type='number']").click(function() {
             $(this).select();
         });
+
+        $('.constate').removeClass('saving')
     }
 
     save() {
@@ -272,17 +279,21 @@ $('#content').append(Book.elem)
 
 // SAVE LOGIC
 //
-var saveTO = null
 
-function saveAll() {
+function pendingChanges() {
     if ($('.constate').hasClass('connected'))
         $('.constate').addClass('saving')
-    clearTimeout(saveTO)
-    saveTO = setTimeout(() => {
-        Book.save()
-        console.log('saved')
-        $('.constate').removeClass('saving')
-    }, 2000)
+}
+
+function saveAll() {
+    Book.save()
+    console.log('saved')
+    $('.constate').removeClass('saving')
+}
+
+function resetChanges() {
+    socket.emit('reset')
+    console.log('reset')
 }
 
 // MENU
@@ -305,6 +316,9 @@ $(document).ready(function() {
         var el = $(e.currentTarget)
         $('.scenesel').removeClass('edit')
         el.addClass('edit')
+
+        // LOOSE unsaved changes
+        if ($('.constate').hasClass('saving')) resetChanges()
 
         Book.edit(el.attr("data-value"))
     })
