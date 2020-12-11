@@ -192,12 +192,21 @@ class Scene {
             pendingChanges()
         })
 
-        this.save_changes = $('<a class="waves-effect waves-light btn-small yellow darken-4"><i class="material-icons left">save</i>enregistrer</a>')
+        this.save_changes = $('<a class="waves-effect waves-light btn-small yellow darken-4 savingBtns"><i class="material-icons left">save</i>enregistrer</a>')
         this.save_changes.on('click', () => {
             saveAll()
         })
 
-        $('<h5>SCENE ' + this.id + '</h5>').append(this.add_sensor).append(this.save_changes).appendTo(this.elem)
+        this.cancel_changes = $('<a class="waves-effect waves-light btn-small red darken-4 savingBtns"><i class="material-icons left">cancel</i>annuler</a>')
+        this.cancel_changes.on('click', () => {
+            resetChanges()
+        })
+
+        $('<h5>SCENE ' + this.id + '</h5>')
+            .append(this.add_sensor)
+            .append(this.save_changes)
+            .append(this.cancel_changes)
+            .appendTo(this.elem)
 
         if (data)
             for (const s of data['sensors']) this.addSensor(s)
@@ -253,6 +262,7 @@ class SceneBook {
         });
 
         $('.constate').removeClass('saving')
+        $('.savingBtns').hide();
     }
 
     save() {
@@ -283,12 +293,14 @@ $('#content').append(Book.elem)
 function pendingChanges() {
     if ($('.constate').hasClass('connected'))
         $('.constate').addClass('saving')
+    $('.savingBtns').show();
 }
 
 function saveAll() {
     Book.save()
     console.log('saved')
     $('.constate').removeClass('saving')
+    $('.savingBtns').hide();
 }
 
 function resetChanges() {

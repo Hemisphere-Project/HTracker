@@ -67,8 +67,15 @@ def ss(ev, sceneN):
 @M5usb.on('measure')
 def ms(ev, data):
     result = Book.process(data['sensor'], data['value'])
+    filtered = {}
     for m in result:
-        DMX32.set(m[0], m[1])
+        if m[0] in filtered:
+            filtered[m[0]] = max(m[1], filtered[m[0]])
+        else:
+            filtered[m[0]] = m[1]
+
+    for ch, val in filtered.items():
+        DMX32.set(ch, val)
 
 
 

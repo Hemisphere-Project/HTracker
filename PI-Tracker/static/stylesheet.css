@@ -171,6 +171,10 @@ body {
     font-size: 80%;
 }
 
+.savingBtns {
+    display: none;
+}
+
 
 /* SENSOR */
 
